@@ -1,3 +1,12 @@
 name = "block-unblock-online2-proxy"
-main = "src/index.js"
+main = "cloudflare-worker.js"
 compatibility_date = "2024-01-01"
+
+# ⚠️ نکته مهم: ADMIN_TOKEN را در wrangler.toml نگذار!
+# به جای آن از wrangler secrets استفاده کن:
+# wrangler secret put ADMIN_TOKEN
+# سپس وارد کن: v7x4q817c8fo2e1872y8s63l5fpe9izv
+
+# برای توسعه محلی، از .env استفاده کن:
+# فایل .env را بساز و این خط را اضافه کن:
+# ADMIN_TOKEN=v7x4q817c8fo2e1872y8s63l5fpe9izv
