@@ -22,21 +22,21 @@ export default {
           status: 204,
           headers: {
             "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
             "Access-Control-Allow-Headers": "Content-Type, X-Admin-Token",
             "Access-Control-Max-Age": "86400",
           },
         });
       }
 
+      // اجازه GET برای /preview بدون نیاز به توکن
+      if (request.method === "GET" && pathname.startsWith("/preview")) {
+        return await fetchLinkPreview(request);
+      }
+
       // --- مسیردهی ---
       // پشتیبانی از /post و /post/ و /user و /user/
       const normalizedPath = pathname.replace(/\/$/, "");
-
-      // --- دریافت اطلاعات پیش‌نمایش لینک (نیاز به توکن ندارد - یا اختیاری) ---
-      if (normalizedPath === "/preview") {
-        return await fetchLinkPreview(request);
-      }
 
       // --- امنیت: بررسی توکن از کلاینت برای عملیات حساس ---
       const clientToken = request.headers.get("X-Admin-Token");
