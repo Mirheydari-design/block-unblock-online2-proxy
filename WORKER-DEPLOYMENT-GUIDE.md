@@ -20,7 +20,7 @@
 
 5. یک نام برای Worker بگذار:
    ```
-   block-unblock-online2-proxy
+   block-unblock-online22-proxy
    ```
 
 6. روی **Deploy** کلیک کن (فعلاً کد پیش‌فرض deploy می‌شود)
@@ -91,7 +91,7 @@ wrangler secret put ADMIN_TOKEN
 
 5. آدرس Worker را یادداشت کن، مثلاً:
    ```
-   https://block-unblock-online2-proxy.mehdi-2009m.workers.dev
+   https://block-unblock-online22-proxy.mehdi-2009m.workers.dev
    ```
 
 ---
@@ -101,7 +101,7 @@ wrangler secret put ADMIN_TOKEN
 ### تست ساده با curl:
 
 ```bash
-curl -X POST https://block-unblock-online2-proxy.mehdi-2009m.workers.dev/user \
+curl -X POST https://block-unblock-online22-proxy.mehdi-2009m.workers.dev/user \
   -H "Content-Type: application/json" \
   -d '{"userId":"12345","action":"block"}'
 ```
@@ -141,7 +141,7 @@ curl -X POST https://block-unblock-online2-proxy.mehdi-2009m.workers.dev/user \
 در `admin.html` بررسی کن:
 ```javascript
 // ✅ درست
-const API_BASE_URL = 'https://block-unblock-online2-proxy.mehdi-2009m.workers.dev';
+const API_BASE_URL = 'https://block-unblock-online22-proxy.mehdi-2009m.workers.dev';
 
 // ❌ اشتباه
 const API_BASE_URL = 'https://mahdaviat.metafa.ir/api/admin/block';

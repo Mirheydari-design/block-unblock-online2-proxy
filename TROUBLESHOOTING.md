@@ -13,7 +13,7 @@
 #### در Cloudflare Dashboard:
 
 1. برو به: https://dash.cloudflare.com
-2. **Workers & Pages** > **block-unblock-online2-proxy**
+2. **Workers & Pages** > **block-unblock-online22-proxy**
 3. تب **Overview** را باز کن
 4. باید ببینی:
    - ✅ Status: Active
@@ -34,7 +34,7 @@ Quick Edit > Save and Deploy
 
 #### در Cloudflare Dashboard:
 
-1. Workers > `block-unblock-online2-proxy`
+1. Workers > `block-unblock-online22-proxy`
 2. **Settings** > **Variables**
 3. باید ببینی:
    ```
@@ -66,7 +66,7 @@ Save
 
 ```bash
 curl -X POST \
-  https://block-unblock-online2-proxy.mehdi-2009m.workers.dev/post \
+  https://block-unblock-online22-proxy.mehdi-2009m.workers.dev/post \
   -H "Content-Type: application/json" \
   -H "X-Admin-Token: v7x4q817c8fo2e1872y8s63l5fpe9izv" \
   -d '{"postId":"test-123","action":"block"}' \
@@ -111,7 +111,7 @@ curl -X POST \
 
 ### 4️⃣ بررسی Logs در Cloudflare
 
-1. Workers > `block-unblock-online2-proxy`
+1. Workers > `block-unblock-online22-proxy`
 2. تب **Logs** را باز کن
 3. یک درخواست بفرست
 4. لاگ‌ها را ببین
@@ -174,7 +174,7 @@ Quick Edit > Save and Deploy
 
 ```javascript
 // ✅ درست
-const API_BASE_URL = 'https://block-unblock-online2-proxy.mehdi-2009m.workers.dev';
+const API_BASE_URL = 'https://block-unblock-online22-proxy.mehdi-2009m.workers.dev';
 
 // ❌ اشتباه
 const API_BASE_URL = 'https://mahdaviat.metafa.ir/api/admin/block';
@@ -199,7 +199,7 @@ headers: {
 ### راه‌حل 4: تست با Postman
 
 1. Postman را باز کن
-2. **POST** `https://block-unblock-online2-proxy.mehdi-2009m.workers.dev/post`
+2. **POST** `https://block-unblock-online22-proxy.mehdi-2009m.workers.dev/post`
 3. Headers:
    ```
    Content-Type: application/json
@@ -224,7 +224,7 @@ headers: {
 ### تست 1: Health Check
 
 ```bash
-curl https://block-unblock-online2-proxy.mehdi-2009m.workers.dev/post \
+curl https://block-unblock-online22-proxy.mehdi-2009m.workers.dev/post \
   -X POST \
   -H "Content-Type: application/json" \
   -H "X-Admin-Token: v7x4q817c8fo2e1872y8s63l5fpe9izv" \
@@ -234,7 +234,7 @@ curl https://block-unblock-online2-proxy.mehdi-2009m.workers.dev/post \
 ### تست 2: بدون توکن (باید 401 بدهد)
 
 ```bash
-curl https://block-unblock-online2-proxy.mehdi-2009m.workers.dev/post \
+curl https://block-unblock-online22-proxy.mehdi-2009m.workers.dev/post \
   -X POST \
   -H "Content-Type: application/json" \
   -d '{"postId":"test","action":"block"}'
@@ -245,7 +245,7 @@ curl https://block-unblock-online2-proxy.mehdi-2009m.workers.dev/post \
 ### تست 3: توکن نادرست (باید 403 بدهد)
 
 ```bash
-curl https://block-unblock-online2-proxy.mehdi-2009m.workers.dev/post \
+curl https://block-unblock-online22-proxy.mehdi-2009m.workers.dev/post \
   -X POST \
   -H "Content-Type: application/json" \
   -H "X-Admin-Token: wrong-token" \

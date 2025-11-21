@@ -46,7 +46,7 @@
 ### 1️⃣ Block/Unblock پست
 
 ```http
-POST https://block-unblock-online2-proxy.mehdi-2009m.workers.dev/post
+POST https://block-unblock-online22-proxy.mehdi-2009m.workers.dev/post
 Content-Type: application/json
 X-Admin-Token: v7x4q817c8fo2e1872y8s63l5fpe9izv
 
@@ -71,7 +71,7 @@ X-Admin-Token: v7x4q817c8fo2e1872y8s63l5fpe9izv
 ### 2️⃣ Block/Unblock کاربر
 
 ```http
-POST https://block-unblock-online2-proxy.mehdi-2009m.workers.dev/user
+POST https://block-unblock-online22-proxy.mehdi-2009m.workers.dev/user
 Content-Type: application/json
 X-Admin-Token: v7x4q817c8fo2e1872y8s63l5fpe9izv
 
@@ -118,7 +118,7 @@ X-Admin-Token: v7x4q817c8fo2e1872y8s63l5fpe9izv
 
 ```bash
 curl -X POST \
-  https://block-unblock-online2-proxy.mehdi-2009m.workers.dev/post \
+  https://block-unblock-online22-proxy.mehdi-2009m.workers.dev/post \
   -H "Content-Type: application/json" \
   -H "X-Admin-Token: v7x4q817c8fo2e1872y8s63l5fpe9izv" \
   -d '{
@@ -131,7 +131,7 @@ curl -X POST \
 
 ```bash
 curl -X POST \
-  https://block-unblock-online2-proxy.mehdi-2009m.workers.dev/user \
+  https://block-unblock-online22-proxy.mehdi-2009m.workers.dev/user \
   -H "Content-Type: application/json" \
   -H "X-Admin-Token: v7x4q817c8fo2e1872y8s63l5fpe9izv" \
   -d '{
@@ -185,7 +185,7 @@ fetch(API_BASE_URL + '/user', {
 - در `admin.html` چک کن:
   ```javascript
   // ✅ درست
-  const API_BASE_URL = 'https://block-unblock-online2-proxy.mehdi-2009m.workers.dev';
+  const API_BASE_URL = 'https://block-unblock-online22-proxy.mehdi-2009m.workers.dev';
   fetch(API_BASE_URL + '/user', ...)
   
   // ❌ اشتباه
@@ -200,7 +200,7 @@ fetch(API_BASE_URL + '/user', {
 
 **راه‌حل:**
 1. برو به Cloudflare Dashboard
-2. Workers > `block-unblock-online2-proxy`
+2. Workers > `block-unblock-online22-proxy`
 3. **Settings** > **Variables** > **Add variable**:
    ```
    ADMIN_TOKEN = v7x4q817c8fo2e1872y8s63l5fpe9izv
@@ -216,7 +216,7 @@ fetch(API_BASE_URL + '/user', {
 
 ```javascript
 const ADMIN_TOKEN = 'v7x4q817c8fo2e1872y8s63l5fpe9izv';
-const API_BASE_URL = 'https://block-unblock-online2-proxy.mehdi-2009m.workers.dev';
+const API_BASE_URL = 'https://block-unblock-online22-proxy.mehdi-2009m.workers.dev';
 
 // Block کردن کاربر
 async function handleUserAction(action) {
@@ -273,7 +273,7 @@ Worker لاگ‌های مفیدی در Cloudflare Dashboard نمایش می‌د
 ```
 
 برای مشاهده لاگ‌ها:
-1. Cloudflare Dashboard > Workers > `block-unblock-online2-proxy`
+1. Cloudflare Dashboard > Workers > `block-unblock-online22-proxy`
 2. تب **Logs** را باز کن
 3. لاگ‌های real-time را ببین
 

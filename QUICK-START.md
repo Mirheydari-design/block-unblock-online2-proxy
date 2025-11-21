@@ -24,7 +24,7 @@ admin.html → Worker → API
 
 1. برو به: https://dash.cloudflare.com
 2. **Workers & Pages** > **Create Application** > **Create Worker**
-3. نام: `block-unblock-online2-proxy`
+3. نام: `block-unblock-online22-proxy`
 4. کد را paste کن
 5. **هنوز Deploy نکن!**
 
@@ -85,7 +85,7 @@ wrangler deploy
 ### تست با curl:
 
 ```bash
-curl -X POST https://block-unblock-online2-proxy.mehdi-2009m.workers.dev/user \
+curl -X POST https://block-unblock-online22-proxy.mehdi-2009m.workers.dev/user \
   -H "Content-Type: application/json" \
   -d '{"userId":"12345","action":"block","reason":"test"}'
 ```
@@ -112,7 +112,7 @@ curl -X POST https://block-unblock-online2-proxy.mehdi-2009m.workers.dev/user \
 
 ### در Dashboard:
 
-1. Workers > `block-unblock-online2-proxy`
+1. Workers > `block-unblock-online22-proxy`
 2. **Settings** > **Variables**
 3. باید ببینی:
    ```
@@ -180,7 +180,7 @@ wrangler deploy
 
 ```javascript
 // ✅ درست
-const API_BASE_URL = 'https://block-unblock-online2-proxy.mehdi-2009m.workers.dev';
+const API_BASE_URL = 'https://block-unblock-online22-proxy.mehdi-2009m.workers.dev';
 
 // ❌ اشتباه
 const API_BASE_URL = 'https://mahdaviat.metafa.ir/api/admin/block';
