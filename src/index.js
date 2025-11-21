@@ -22,16 +22,11 @@ export default {
           status: 204,
           headers: {
             "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
             "Access-Control-Allow-Headers": "Content-Type, X-Admin-Token",
             "Access-Control-Max-Age": "86400",
           },
         });
-      }
-
-      // اجازه GET برای /preview بدون نیاز به توکن
-      if (request.method === "GET" && pathname.startsWith("/preview")) {
-        return await fetchLinkPreview(request);
       }
 
       // --- مسیردهی ---
@@ -240,57 +235,3 @@ async function proxyToBackend(endpoint, request, env) {
   }
 }
 
-/**
- * دریافت اطلاعات متای لینک (OG Tags) برای پیش‌نمایش
- */
-async function fetchLinkPreview(request) {
-  const url = new URL(request.url);
-  const targetUrl = url.searchParams.get("url");
-
-  if (!targetUrl) {
-    return new Response(JSON.stringify({ error: "URL parameter is required" }), {
-      status: 400,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
-    });
-  }
-
-  try {
-    const response = await fetch(targetUrl, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; BlockUnblockBot/1.0)",
-      },
-    });
-
-    const html = await response.text();
-
-    // استخراج اطلاعات ساده با Regex
-    const titleMatch = html.match(/<meta property="og:title" content="([^"]*)"/i) || html.match(/<title>([^<]*)<\/title>/i);
-    const descriptionMatch = html.match(/<meta property="og:description" content="([^"]*)"/i) || html.match(/<meta name="description" content="([^"]*)"/i);
-    const imageMatch = html.match(/<meta property="og:image" content="([^"]*)"/i);
-
-    const preview = {
-      title: titleMatch ? titleMatch[1] : "",
-      description: descriptionMatch ? descriptionMatch[1] : "",
-      image: imageMatch ? imageMatch[1] : "",
-      url: targetUrl
-    };
-
-    return new Response(JSON.stringify(preview), {
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
-    });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: "Failed to fetch URL", details: error.message }), {
-      status: 500,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
-    });
-  }
-}
