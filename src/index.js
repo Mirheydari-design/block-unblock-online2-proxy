@@ -7,6 +7,7 @@
  * ✅ مدیریت کامل خطاها
  * ✅ CORS headers
  * ✅ Production-ready
+ * ✅ Link Preview (/preview)
  */
 
 export default {
@@ -28,12 +29,16 @@ export default {
         });
       }
 
-      // --- New Route for Post Details ---
-      if (pathname === "/details" && request.method === "GET") {
-        return await getPostDetails(request, env);
+      // --- مسیردهی ---
+      // پشتیبانی از /post و /post/ و /user و /user/
+      const normalizedPath = pathname.replace(/\/$/, "");
+
+      // --- دریافت اطلاعات پیش‌نمایش لینک (نیاز به توکن ندارد - یا اختیاری) ---
+      if (normalizedPath === "/preview") {
+        return await fetchLinkPreview(request);
       }
 
-      // --- Security: Check client token ---
+      // --- امنیت: بررسی توکن از کلاینت برای عملیات حساس ---
       const clientToken = request.headers.get("X-Admin-Token");
       if (!clientToken) {
         return new Response(
@@ -86,10 +91,6 @@ export default {
           }
         );
       }
-
-      // --- مسیردهی ---
-      // پشتیبانی از /post و /post/ و /user و /user/
-      const normalizedPath = pathname.replace(/\/$/, "");
       
       if (normalizedPath === "/post") {
         return await proxyToBackend("/api/admin/block/post", request, env);
@@ -104,7 +105,7 @@ export default {
         JSON.stringify({ 
           success: false,
           error: "Not found",
-          message: `مسیر ${pathname} یافت نشد. مسیرهای معتبر: /post, /user`
+          message: `مسیر ${pathname} یافت نشد. مسیرهای معتبر: /post, /user, /preview`
         }), 
         { 
           status: 404,
@@ -136,70 +137,7 @@ export default {
 };
 
 /**
- * New function to get post details by scraping the post page.
- * @param {Request} request The incoming request, expecting a `url` query parameter.
- * @param {Object} env The environment variables.
- * @returns {Response} A JSON response with thumbnail and previewText.
- */
-async function getPostDetails(request, env) {
-  const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Content-Type": "application/json",
-  };
-
-  const url = new URL(request.url);
-  const postUrl = url.searchParams.get('url');
-
-  if (!postUrl) {
-    return new Response(JSON.stringify({ error: "url parameter is missing" }), {
-      status: 400,
-      headers: corsHeaders
-    });
-  }
-
-  try {
-    const response = await fetch(postUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-      }
-    });
-
-    if (!response.ok) {
-      return new Response(JSON.stringify({ error: `Failed to fetch post details. Status: ${response.status}` }), {
-        status: 502,
-        headers: corsHeaders
-      });
-    }
-    const html = await response.text();
-
-    const thumbnailMatch = html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/);
-    const descriptionMatch = html.match(/<meta\s+property="og:description"\s+content="([^"]+)"/);
-
-    const details = {
-      thumbnail: thumbnailMatch ? thumbnailMatch[1] : null,
-      previewText: descriptionMatch ? descriptionMatch[1] : null,
-    };
-
-    return new Response(JSON.stringify(details), {
-      status: 200,
-      headers: corsHeaders
-    });
-
-  } catch (error) {
-    return new Response(JSON.stringify({ error: 'Failed to scrape post page', details: error.message }), {
-      status: 500,
-      headers: corsHeaders
-    });
-  }
-}
-
-/**
- * Professional proxy function to send requests to the Backend
- * 
- * @param {string} endpoint - مسیر API (مثلاً /api/admin/block/post)
- * @param {Request} request - درخواست اصلی
- * @param {Object} env - Environment Variables
- * @returns {Response} پاسخ از Backend با CORS headers
+ * تابع پراکسی حرفه‌ای برای ارسال درخواست به Backend
  */
 async function proxyToBackend(endpoint, request, env) {
   const backendUrl = "https://mahdaviat.metafa.ir" + endpoint;
@@ -299,5 +237,60 @@ async function proxyToBackend(endpoint, request, env) {
         }
       }
     );
+  }
+}
+
+/**
+ * دریافت اطلاعات متای لینک (OG Tags) برای پیش‌نمایش
+ */
+async function fetchLinkPreview(request) {
+  const url = new URL(request.url);
+  const targetUrl = url.searchParams.get("url");
+
+  if (!targetUrl) {
+    return new Response(JSON.stringify({ error: "URL parameter is required" }), {
+      status: 400,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
+    });
+  }
+
+  try {
+    const response = await fetch(targetUrl, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; BlockUnblockBot/1.0)",
+      },
+    });
+
+    const html = await response.text();
+
+    // استخراج اطلاعات ساده با Regex
+    const titleMatch = html.match(/<meta property="og:title" content="([^"]*)"/i) || html.match(/<title>([^<]*)<\/title>/i);
+    const descriptionMatch = html.match(/<meta property="og:description" content="([^"]*)"/i) || html.match(/<meta name="description" content="([^"]*)"/i);
+    const imageMatch = html.match(/<meta property="og:image" content="([^"]*)"/i);
+
+    const preview = {
+      title: titleMatch ? titleMatch[1] : "",
+      description: descriptionMatch ? descriptionMatch[1] : "",
+      image: imageMatch ? imageMatch[1] : "",
+      url: targetUrl
+    };
+
+    return new Response(JSON.stringify(preview), {
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
+    });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: "Failed to fetch URL", details: error.message }), {
+      status: 500,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
+    });
   }
 }
