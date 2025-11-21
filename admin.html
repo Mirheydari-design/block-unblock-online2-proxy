@@ -1,0 +1,1806 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پنل مدیریت - Block/Unblock</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .admin-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .label-optional {
+            color: #999;
+            font-weight: 400;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+
+        .collapsible {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .collapsible-header {
+            padding: 12px 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            font-size: 13px;
+            color: #666;
+            transition: background 0.2s ease;
+        }
+
+        .collapsible-header:hover {
+            background: #f0f0f0;
+        }
+
+        .collapsible-header::after {
+            content: '▼';
+            font-size: 10px;
+            transition: transform 0.3s ease;
+            color: #999;
+        }
+
+        .collapsible-header.collapsed::after {
+            transform: rotate(-90deg);
+        }
+
+        .collapsible-content {
+            max-height: 500px;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            padding: 0 15px;
+        }
+
+        .collapsible-content.collapsed {
+            max-height: 0;
+            padding: 0 15px;
+        }
+
+        .collapsible-body {
+            padding: 15px 0;
+            font-size: 13px;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .collapsible-body ul {
+            margin: 10px 0 0 20px;
+            list-style-type: disc;
+        }
+
+        .collapsible-body li {
+            margin: 5px 0;
+        }
+
+        .collapsible-body code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .button-group.user-buttons {
+            margin-top: 10px;
+        }
+
+        .button-group.post-buttons {
+            margin-top: 10px;
+        }
+
+        button {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-block {
+            background: #4a90e2;
+            color: white;
+        }
+
+        .btn-block:hover {
+            background: #357abd;
+            box-shadow: 0 5px 20px rgba(74, 144, 226, 0.4);
+        }
+
+        .btn-unblock {
+            background: transparent;
+            border: 2px solid #17a2b8;
+            color: #17a2b8;
+        }
+
+        .btn-unblock:hover {
+            background: #17a2b8;
+            color: white;
+            box-shadow: 0 5px 20px rgba(23, 162, 184, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .response-container {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 10px;
+            min-height: 60px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .response-container.show {
+            display: block;
+        }
+
+        .response-success {
+            background: #d4edda;
+            border: 2px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .response-error {
+            background: #f8d7da;
+            border: 2px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .response-loading {
+            background: #d1ecf1;
+            border: 2px solid #bee5eb;
+            color: #0c5460;
+        }
+
+        .response-message {
+            font-size: 15px;
+            line-height: 1.8;
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+
+        .section-divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #e0e0e0, transparent);
+            margin: 30px 0;
+        }
+
+        .section-title {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-left: 8px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .settings-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.3s;
+            border-radius: 26px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: #667eea;
+        }
+
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        .log-section {
+            margin-top: 25px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            background: #f8f9fa;
+            padding: 15px;
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .log-count {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .btn-clear {
+            background: #dc3545;
+            color: white;
+            padding: 8px 15px;
+            font-size: 13px;
+            border-radius: 6px;
+        }
+
+        .btn-clear:hover {
+            background: #c82333;
+        }
+
+        .log-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .log-item:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .log-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .log-type {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .log-type.user {
+            color: #667eea;
+        }
+
+        .log-type.post {
+            color: #f5576c;
+        }
+
+        .log-timestamp {
+            color: #999;
+            font-size: 11px;
+        }
+
+        .log-status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .log-status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .log-status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .log-details {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #555;
+        }
+
+        .log-details code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            display: block;
+            margin-top: 5px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .log-empty {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+            font-size: 14px;
+        }
+
+        .log-action {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .log-action.block {
+            color: #f5576c;
+        }
+
+        .log-action.unblock {
+            color: #4facfe;
+        }
+
+        /* Blocked Items Section */
+        .blocked-section {
+            background: #fff;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+
+        .blocked-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .blocked-tab {
+            flex: 1;
+            padding: 15px 20px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .blocked-tab:hover {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .blocked-tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .blocked-panel {
+            display: none;
+            padding: 20px;
+        }
+
+        .blocked-panel.active {
+            display: block;
+        }
+
+        .blocked-header {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn-refresh {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .btn-refresh:hover {
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .blocked-container {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .blocked-item {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            animation: slideInItem 0.3s ease;
+        }
+
+        @keyframes slideInItem {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .blocked-item:hover {
+            background: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .blocked-item-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .blocked-item-id {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+        }
+
+        .blocked-item-meta {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .blocked-item-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .blocked-item-reason {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 5px;
+            padding: 5px 10px;
+            font-size: 12px;
+            color: #856404;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .blocked-item-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-unblock-item {
+            padding: 10px 20px;
+            background: transparent;
+            border: 2px solid #17a2b8;
+            color: #17a2b8;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .btn-unblock-item:hover {
+            background: #17a2b8;
+            color: white;
+            box-shadow: 0 5px 15px rgba(23, 162, 184, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-unblock-item:active {
+            transform: translateY(0);
+        }
+
+        .btn-copy {
+            padding: 10px 15px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-copy:hover {
+            background: #5a6268;
+        }
+
+        .blocked-empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+            font-size: 15px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+    </style>
+
+</head>
+<body>
+    <div class="admin-container">
+        <h1>🛡️ پنل مدیریت</h1>
+        <p class="subtitle">مدیریت Block/Unblock کاربران و پست‌ها</p>
+
+        <!-- Settings Section -->
+        <div class="settings-section">
+            <div class="settings-header">
+                <div>
+                    <strong>⚙️ تنظیمات لاگ</strong>
+                    <div style="font-size: 12px; color: #666; margin-top: 5px;">
+                        تمام درخواست‌ها و پاسخ‌ها ثبت می‌شوند
+                    </div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="loggingEnabled" checked onchange="toggleLogging()">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- User Section -->
+        <div class="section-title">👤 مدیریت کاربران</div>
+        
+        <div class="collapsible">
+            <div class="collapsible-header collapsed" onclick="toggleCollapsible(this)">
+                <span>ℹ️ اطلاعات و راهنما</span>
+            </div>
+            <div class="collapsible-content collapsed">
+                <div class="collapsible-body">
+                    <strong>رفتار:</strong>
+                    <ul>
+                        <li><strong>Block:</strong> رکورد در جدول <code>user_blocks</code> درج می‌شود (idempotent)</li>
+                        <li><strong>Unblock:</strong> تمام رکوردهای مربوط به این کاربر حذف می‌شوند</li>
+                        <li>پست‌های کاربر بلاک شده در فید، پروفایل، ذخیره شده‌ها، فید عمومی و ربات‌ها نمایش داده نمی‌شود</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="userId">شناسه کاربر (User ID) <span style="color: red;">*</span>:</label>
+            <input type="text" id="userId" required />
+        </div>
+        <div class="form-group">
+            <label for="userReason">
+                دلیل (Reason)
+                <span class="label-optional">(اختیاری)</span>
+            </label>
+            <textarea id="userReason"></textarea>
+        </div>
+        <div class="button-group user-buttons">
+            <button class="btn-block" onclick="handleUserAction('block')">
+                🚫 Block User
+            </button>
+            <button class="btn-unblock" onclick="handleUserAction('unblock')">
+                ✅ Unblock User
+            </button>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <!-- Post Section -->
+        <div class="section-title">📝 مدیریت پست‌ها</div>
+        
+        <div class="collapsible">
+            <div class="collapsible-header collapsed" onclick="toggleCollapsible(this)">
+                <span>ℹ️ اطلاعات و راهنما</span>
+            </div>
+            <div class="collapsible-content collapsed">
+                <div class="collapsible-body">
+                    <strong>رفتار:</strong>
+                    <ul>
+                        <li><strong>Block:</strong> رکورد در جدول <code>post_blocks</code> درج می‌شود (idempotent)</li>
+                        <li><strong>Unblock:</strong> تمام رکوردهای مربوط به این پست حذف می‌شوند</li>
+                        <li>پست بلاک شده در هیچ‌جا (فید، پروفایل، ذخیره شده‌ها، صفحه‌ی جزئیات، فید عمومی، ربات‌ها) دیده نمی‌شود</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="postId">شناسه پست (Post ID) <span style="color: red;">*</span>:</label>
+            <input type="text" id="postId" required />
+        </div>
+        <div class="form-group">
+            <label for="postReason">
+                دلیل (Reason)
+                <span class="label-optional">(اختیاری)</span>
+            </label>
+            <textarea id="postReason"></textarea>
+        </div>
+        <div class="button-group post-buttons">
+            <button class="btn-block" onclick="handlePostAction('block')">
+                🚫 Block Post
+            </button>
+            <button class="btn-unblock" onclick="handlePostAction('unblock')">
+                ✅ Unblock Post
+            </button>
+        </div>
+
+        <!-- Response Container -->
+        <div id="responseContainer" class="response-container">
+            <div class="response-message" id="responseMessage"></div>
+        </div>
+
+        <!-- Blocked Items List -->
+        <div class="section-divider"></div>
+        <div class="section-title">🚫 لیست بلاک شده‌ها</div>
+        
+        <div class="blocked-section">
+            <!-- Tabs -->
+            <div class="blocked-tabs">
+                <button class="blocked-tab active" onclick="switchBlockedTab('users')">
+                    👤 کاربران بلاک شده (<span id="blockedUsersCount">0</span>)
+                </button>
+                <button class="blocked-tab" onclick="switchBlockedTab('posts')">
+                    📝 پست‌های بلاک شده (<span id="blockedPostsCount">0</span>)
+                </button>
+            </div>
+
+            <!-- Users List -->
+            <div id="blockedUsersPanel" class="blocked-panel active">
+                <div class="blocked-header">
+                    <input type="text" id="searchUsers" class="search-input" oninput="filterBlockedItems('users')">
+                    <button class="btn-refresh" onclick="loadBlockedItems()">🔄 بروزرسانی</button>
+                </div>
+                <div id="blockedUsersContainer" class="blocked-container">
+                    <div class="blocked-empty">هیچ کاربری بلاک نشده است</div>
+                </div>
+            </div>
+
+            <!-- Posts List -->
+            <div id="blockedPostsPanel" class="blocked-panel">
+                <div class="blocked-header">
+                    <input type="text" id="searchPosts" class="search-input" oninput="filterBlockedItems('posts')">
+                    <button class="btn-refresh" onclick="loadBlockedItems()">🔄 بروزرسانی</button>
+                </div>
+                <div id="blockedPostsContainer" class="blocked-container">
+                    <div class="blocked-empty">هیچ پستی بلاک نشده است</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Log Section -->
+        <div class="section-divider"></div>
+        <div class="section-title">📋 تاریخچه لاگ‌ها</div>
+        <div class="log-section" id="logSection">
+            <div class="log-header">
+                <div class="log-count" id="logCount">0 لاگ ثبت شده</div>
+                <button class="btn-clear" onclick="clearLogs()">🗑️ پاک کردن همه</button>
+            </div>
+            <div id="logContainer">
+                <div class="log-empty">هنوز لاگی ثبت نشده است</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ADMIN_TOKEN = 'v7x4q817c8fo2e1872y8s63l5fpe9izv';
+        
+        // 🔥 Cloudflare Worker Proxy
+        // متصل به Worker جدید برای حل مشکل CORS
+        const API_BASE_URL = 'https://block-unblock-online2-proxy.mehdi-2009m.workers.dev';
+        const LOG_STORAGE_KEY = 'admin_panel_logs';
+        const MAX_LOGS = 100; // حداکثر تعداد لاگ‌های ذخیره شده
+        
+        // Blocked Items Storage
+        const BLOCKED_USERS_KEY = 'admin_blocked_users';
+        const BLOCKED_POSTS_KEY = 'admin_blocked_posts';
+
+        // بارگذاری تنظیمات لاگ از localStorage
+        function loadLoggingSettings() {
+            const enabled = localStorage.getItem('loggingEnabled');
+            if (enabled !== null) {
+                document.getElementById('loggingEnabled').checked = enabled === 'true';
+            }
+        }
+
+        // ذخیره تنظیمات لاگ
+        function toggleLogging() {
+            const enabled = document.getElementById('loggingEnabled').checked;
+            localStorage.setItem('loggingEnabled', enabled);
+        }
+
+        // بررسی اینکه آیا لاگ فعال است
+        function isLoggingEnabled() {
+            return document.getElementById('loggingEnabled').checked;
+        }
+
+        // دریافت لاگ‌ها از localStorage
+        function getLogs() {
+            try {
+                const logs = localStorage.getItem(LOG_STORAGE_KEY);
+                return logs ? JSON.parse(logs) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        // ذخیره لاگ در localStorage
+        function saveLog(log) {
+            if (!isLoggingEnabled()) return;
+
+            const logs = getLogs();
+            logs.unshift(log); // اضافه کردن به ابتدای آرایه
+
+            // محدود کردن تعداد لاگ‌ها
+            if (logs.length > MAX_LOGS) {
+                logs.splice(MAX_LOGS);
+            }
+
+            try {
+                localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(logs));
+                renderLogs();
+            } catch (e) {
+                console.error('خطا در ذخیره لاگ:', e);
+            }
+        }
+
+        // پاک کردن همه لاگ‌ها
+        function clearLogs() {
+            if (confirm('آیا مطمئن هستید که می‌خواهید همه لاگ‌ها را پاک کنید؟')) {
+                localStorage.removeItem(LOG_STORAGE_KEY);
+                renderLogs();
+            }
+        }
+
+        // نمایش لاگ‌ها
+        function renderLogs() {
+            const logs = getLogs();
+            const container = document.getElementById('logContainer');
+            const countElement = document.getElementById('logCount');
+
+            countElement.textContent = `${logs.length} لاگ ثبت شده`;
+
+            if (logs.length === 0) {
+                container.innerHTML = '<div class="log-empty">هنوز لاگی ثبت نشده است</div>';
+                return;
+            }
+
+            container.innerHTML = logs.map((log, index) => {
+                const statusClass = log.success ? 'success' : 'error';
+                const statusText = log.success ? '✅ موفق' : '❌ خطا';
+                const actionClass = log.action === 'block' ? 'block' : 'unblock';
+                const typeClass = log.type === 'user' ? 'user' : 'post';
+                const typeText = log.type === 'user' ? '👤 کاربر' : '📝 پست';
+                
+                // نمایش userId یا postId یا هر دو
+                let idValue = '';
+                if (log.type === 'user') {
+                    if (log.userId) idValue += `User: ${log.userId}`;
+                    if (log.postId) idValue += (idValue ? ' | ' : '') + `Post: ${log.postId}`;
+                    if (!idValue) idValue = 'N/A';
+                } else {
+                    idValue = log.postId || 'N/A';
+                }
+
+                return `
+                    <div class="log-item">
+                        <div class="log-item-header">
+                            <div>
+                                <span class="log-type ${typeClass}">${typeText}</span>
+                                <span class="log-action ${actionClass}">${log.action === 'block' ? '🚫 Block' : '✅ Unblock'}</span>
+                                <span style="color: #666; margin: 0 5px; font-size: 11px;">${idValue}</span>
+                            </div>
+                            <span class="log-timestamp">${log.timestamp}</span>
+                        </div>
+                        <div>
+                            <span class="log-status ${statusClass}">${statusText}</span>
+                            ${log.statusCode ? `<span style="color: #666; margin-right: 10px;">کد: ${log.statusCode}</span>` : ''}
+                        </div>
+                        <div class="log-details">
+                            <strong>درخواست:</strong>
+                            <code>${JSON.stringify(log.request, null, 2)}</code>
+                            ${log.response ? `
+                                <strong style="display: block; margin-top: 8px;">پاسخ:</strong>
+                                <code>${JSON.stringify(log.response, null, 2)}</code>
+                            ` : ''}
+                            ${log.error ? `
+                                <strong style="display: block; margin-top: 8px; color: #dc3545;">خطا:</strong>
+                                <code style="color: #dc3545;">${log.error}</code>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // فرمت کردن تاریخ و زمان
+        function formatTimestamp() {
+            const now = new Date();
+            const date = now.toLocaleDateString('fa-IR');
+            const time = now.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            return `${date} ${time}`;
+        }
+
+        // استخراج UUID از URL کامل یا بازگرداندن UUID خام
+        function extractId(input) {
+            if (!input) return null;
+            
+            // الگو برای UUID (36 کاراکتر شامل خط تیره)
+            const uuidPattern = /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/;
+            const match = input.match(uuidPattern);
+            
+            if (match) {
+                return match[0];
+            }
+            
+            // اگر خودش UUID است (بدون URL)
+            const cleanInput = input.trim();
+            if (uuidPattern.test(cleanInput)) {
+                return cleanInput;
+            }
+            
+            return null;
+        }
+
+        // بارگذاری لاگ‌ها هنگام لود صفحه
+        loadLoggingSettings();
+        renderLogs();
+
+        // ============================================
+        // Blocked Items Management
+        // ============================================
+
+        // دریافت لیست کاربران بلاک شده
+        function getBlockedUsers() {
+            try {
+                const users = localStorage.getItem(BLOCKED_USERS_KEY);
+                return users ? JSON.parse(users) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        // دریافت لیست پست‌های بلاک شده
+        function getBlockedPosts() {
+            try {
+                const posts = localStorage.getItem(BLOCKED_POSTS_KEY);
+                return posts ? JSON.parse(posts) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        // ذخیره کاربر بلاک شده
+        function addBlockedUser(userId, postId, reason) {
+            try {
+                const users = getBlockedUsers();
+                
+                // بررسی تکراری نبودن
+                const exists = users.find(u => u.userId === userId);
+                if (exists) {
+                    // آپدیت اطلاعات
+                    exists.blockedAt = new Date().toISOString();
+                    exists.reason = reason || exists.reason;
+                    if (postId) exists.postId = postId;
+                } else {
+                    // اضافه کردن جدید
+                    users.unshift({
+                        userId: userId,
+                        postId: postId || null,
+                        reason: reason || null,
+                        blockedAt: new Date().toISOString()
+                    });
+                }
+                
+                // ذخیره در localStorage با error handling
+                try {
+                    localStorage.setItem(BLOCKED_USERS_KEY, JSON.stringify(users));
+                    renderBlockedItems();
+                } catch (storageError) {
+                    console.error('خطا در ذخیره localStorage:', storageError);
+                    showResponse('⚠️ خطا در ذخیره لیست بلاک شده‌ها. ممکن است localStorage پر باشد.', 'response-error');
+                }
+            } catch (error) {
+                console.error('خطا در addBlockedUser:', error);
+            }
+        }
+
+        // ذخیره پست بلاک شده
+        function addBlockedPost(postId, reason) {
+            try {
+                const posts = getBlockedPosts();
+                
+                // بررسی تکراری نبودن
+                const exists = posts.find(p => p.postId === postId);
+                if (exists) {
+                    // آپدیت اطلاعات
+                    exists.blockedAt = new Date().toISOString();
+                    exists.reason = reason || exists.reason;
+                } else {
+                    // اضافه کردن جدید
+                    posts.unshift({
+                        postId: postId,
+                        reason: reason || null,
+                        blockedAt: new Date().toISOString()
+                    });
+                }
+                
+                // ذخیره در localStorage با error handling
+                try {
+                    localStorage.setItem(BLOCKED_POSTS_KEY, JSON.stringify(posts));
+                    renderBlockedItems();
+                } catch (storageError) {
+                    console.error('خطا در ذخیره localStorage:', storageError);
+                    showResponse('⚠️ خطا در ذخیره لیست بلاک شده‌ها. ممکن است localStorage پر باشد.', 'response-error');
+                }
+            } catch (error) {
+                console.error('خطا در addBlockedPost:', error);
+            }
+        }
+
+        // حذف کاربر از لیست بلاک شده‌ها
+        function removeBlockedUser(userId) {
+            let users = getBlockedUsers();
+            users = users.filter(u => u.userId !== userId);
+            localStorage.setItem(BLOCKED_USERS_KEY, JSON.stringify(users));
+            renderBlockedItems();
+        }
+
+        // حذف پست از لیست بلاک شده‌ها
+        function removeBlockedPost(postId) {
+            let posts = getBlockedPosts();
+            posts = posts.filter(p => p.postId !== postId);
+            localStorage.setItem(BLOCKED_POSTS_KEY, JSON.stringify(posts));
+            renderBlockedItems();
+        }
+
+        // تغییر تب
+        function switchBlockedTab(tab) {
+            // تغییر active class روی تب‌ها
+            document.querySelectorAll('.blocked-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.blocked-panel').forEach(p => p.classList.remove('active'));
+            
+            if (tab === 'users') {
+                document.querySelector('.blocked-tab:first-child').classList.add('active');
+                document.getElementById('blockedUsersPanel').classList.add('active');
+            } else {
+                document.querySelector('.blocked-tab:last-child').classList.add('active');
+                document.getElementById('blockedPostsPanel').classList.add('active');
+            }
+        }
+
+        // فیلتر کردن لیست
+        function filterBlockedItems(type) {
+            const searchInput = type === 'users' ? 
+                document.getElementById('searchUsers') : 
+                document.getElementById('searchPosts');
+            
+            const searchTerm = searchInput.value.toLowerCase();
+            const items = type === 'users' ? getBlockedUsers() : getBlockedPosts();
+            
+            const filtered = items.filter(item => {
+                if (type === 'users') {
+                    return item.userId.toLowerCase().includes(searchTerm) ||
+                           (item.postId && item.postId.toLowerCase().includes(searchTerm)) ||
+                           (item.reason && item.reason.toLowerCase().includes(searchTerm));
+                } else {
+                    return item.postId.toLowerCase().includes(searchTerm) ||
+                           (item.reason && item.reason.toLowerCase().includes(searchTerm));
+                }
+            });
+            
+            if (type === 'users') {
+                renderBlockedUsers(filtered);
+            } else {
+                renderBlockedPosts(filtered);
+            }
+        }
+
+        // رندر کردن لیست کاربران بلاک شده
+        function renderBlockedUsers(users = null) {
+            const container = document.getElementById('blockedUsersContainer');
+            const items = users || getBlockedUsers();
+            
+            document.getElementById('blockedUsersCount').textContent = items.length;
+            
+            if (items.length === 0) {
+                container.innerHTML = '<div class="blocked-empty">هیچ کاربری بلاک نشده است</div>';
+                return;
+            }
+            
+            container.innerHTML = items.map(user => {
+                const date = new Date(user.blockedAt);
+                const formattedDate = date.toLocaleDateString('fa-IR') + ' ' + 
+                                     date.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+                
+                return `
+                    <div class="blocked-item">
+                        <div class="blocked-item-info">
+                            <div class="blocked-item-id">👤 ${user.userId}</div>
+                            ${user.postId ? `<div style="font-size: 11px; color: #999;">📝 از طریق پست: ${user.postId}</div>` : ''}
+                            <div class="blocked-item-meta">
+                                <span>🕒 ${formattedDate}</span>
+                            </div>
+                            ${user.reason ? `<div class="blocked-item-reason">💬 ${user.reason}</div>` : ''}
+                        </div>
+                        <div class="blocked-item-actions">
+                            <button class="btn-copy" onclick="copyToClipboard('${user.userId}')" title="کپی User ID">
+                                📋
+                            </button>
+                            <button class="btn-unblock-item" onclick="unblockFromList('user', '${user.userId}')">
+                                ✅ Unblock
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // رندر کردن لیست پست‌های بلاک شده
+        function renderBlockedPosts(posts = null) {
+            const container = document.getElementById('blockedPostsContainer');
+            const items = posts || getBlockedPosts();
+            
+            document.getElementById('blockedPostsCount').textContent = items.length;
+            
+            if (items.length === 0) {
+                container.innerHTML = '<div class="blocked-empty">هیچ پستی بلاک نشده است</div>';
+                return;
+            }
+            
+            container.innerHTML = items.map(post => {
+                const date = new Date(post.blockedAt);
+                const formattedDate = date.toLocaleDateString('fa-IR') + ' ' + 
+                                     date.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+                
+                return `
+                    <div class="blocked-item">
+                        <div class="blocked-item-info">
+                            <div class="blocked-item-id">📝 ${post.postId}</div>
+                            <div class="blocked-item-meta">
+                                <span>🕒 ${formattedDate}</span>
+                            </div>
+                            ${post.reason ? `<div class="blocked-item-reason">💬 ${post.reason}</div>` : ''}
+                        </div>
+                        <div class="blocked-item-actions">
+                            <button class="btn-copy" onclick="copyToClipboard('${post.postId}')" title="کپی Post ID">
+                                📋
+                            </button>
+                            <button class="btn-unblock-item" onclick="unblockFromList('post', '${post.postId}')">
+                                ✅ Unblock
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // نمایش همه آیتم‌های بلاک شده
+        function renderBlockedItems() {
+            renderBlockedUsers();
+            renderBlockedPosts();
+        }
+
+        // کپی کردن به کلیپبورد
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showResponse('✅ کپی شد: ' + text, 'response-success');
+                setTimeout(() => {
+                    document.getElementById('responseContainer').classList.remove('show');
+                }, 2000);
+            }).catch(() => {
+                showResponse('❌ خطا در کپی کردن', 'response-error');
+            });
+        }
+
+        // Unblock مستقیم از لیست
+        async function unblockFromList(type, id) {
+            if (!confirm(`آیا مطمئن هستید که می‌خواهید این ${type === 'user' ? 'کاربر' : 'پست'} را آنبلاک کنید؟`)) {
+                return;
+            }
+            
+            showResponse('⏳ در حال ارسال درخواست...', 'response-loading');
+            
+            const endpoint = type === 'user' ? '/user' : '/post';
+            const requestBody = {
+                [type === 'user' ? 'userId' : 'postId']: id,
+                action: 'unblock'
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Admin-Token': ADMIN_TOKEN
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                let data;
+                const contentType = response.headers.get('content-type');
+                
+                if (contentType && contentType.includes('application/json')) {
+                    data = await response.json();
+                } else {
+                    const textResponse = await response.text();
+                    try {
+                        data = JSON.parse(textResponse);
+                    } catch {
+                        data = { message: textResponse || 'بدون پاسخ' };
+                    }
+                }
+                
+                if (response.ok) {
+                    showResponse(
+                        `✅ موفقیت‌آمیز! ${type === 'user' ? 'کاربر' : 'پست'} آنبلاک شد.\n\n` +
+                        `ID: ${id}`,
+                        'response-success'
+                    );
+                    
+                    // حذف از لیست
+                    if (type === 'user') {
+                        removeBlockedUser(id);
+                    } else {
+                        removeBlockedPost(id);
+                    }
+                    
+                    // ثبت لاگ
+                    saveLog({
+                        type: type,
+                        userId: type === 'user' ? id : null,
+                        postId: type === 'post' ? id : null,
+                        action: 'unblock',
+                        request: { url: `${API_BASE_URL}${endpoint}`, body: requestBody },
+                        response: data,
+                        success: true,
+                        statusCode: response.status,
+                        timestamp: formatTimestamp()
+                    });
+                } else {
+                    let errorMessage = data.message || data.error || 'خطای نامشخص';
+                    showResponse(`❌ ${errorMessage}\n\nکد وضعیت: ${response.status}`, 'response-error');
+                }
+            } catch (error) {
+                showResponse(`❌ خطا در ارتباط با سرور:\n${error.message}`, 'response-error');
+            }
+        }
+
+        // بارگذاری لیست‌ها
+        function loadBlockedItems() {
+            renderBlockedItems();
+            showResponse('✅ لیست‌ها بروزرسانی شدند', 'response-success');
+            setTimeout(() => {
+                document.getElementById('responseContainer').classList.remove('show');
+            }, 2000);
+        }
+
+        // بررسی دسترسی به localStorage
+        function checkLocalStorage() {
+            try {
+                const test = '__localStorage_test__';
+                localStorage.setItem(test, test);
+                localStorage.removeItem(test);
+                return true;
+            } catch (e) {
+                console.error('localStorage در دسترس نیست:', e);
+                showResponse('⚠️ localStorage در دسترس نیست. لیست بلاک شده‌ها ذخیره نمی‌شود.', 'response-error');
+                return false;
+            }
+        }
+
+        // بارگذاری اولیه
+        if (checkLocalStorage()) {
+            renderBlockedItems();
+        }
+
+        function toggleCollapsible(header) {
+            const content = header.nextElementSibling;
+            header.classList.toggle('collapsed');
+            content.classList.toggle('collapsed');
+        }
+
+        function showResponse(message, type) {
+            const container = document.getElementById('responseContainer');
+            const messageDiv = document.getElementById('responseMessage');
+            
+            container.className = 'response-container show ' + type;
+            messageDiv.textContent = message;
+            
+            // Auto-hide after 5 seconds for success messages
+            if (type === 'response-success') {
+                setTimeout(() => {
+                    container.classList.remove('show');
+                }, 5000);
+            }
+        }
+
+        function setButtonLoading(button, isLoading) {
+            if (isLoading) {
+                button.disabled = true;
+                button.innerHTML = button.textContent.trim() + '<span class="loading-spinner"></span>';
+            } else {
+                button.disabled = false;
+                // Restore original text (remove spinner)
+                const originalText = button.textContent.replace('🔄', '').trim();
+                if (originalText.includes('Block User')) {
+                    button.innerHTML = '🚫 Block User';
+                } else if (originalText.includes('Unblock User')) {
+                    button.innerHTML = '✅ Unblock User';
+                } else if (originalText.includes('Block Post')) {
+                    button.innerHTML = '🚫 Block Post';
+                } else if (originalText.includes('Unblock Post')) {
+                    button.innerHTML = '✅ Unblock Post';
+                }
+            }
+        }
+
+        async function handleUserAction(action) {
+            const rawUserId = document.getElementById('userId').value.trim();
+            const reason = document.getElementById('userReason').value.trim();
+            
+            if (!rawUserId) {
+                showResponse('❌ لطفاً شناسه کاربر را وارد کنید.', 'response-error');
+                document.getElementById('userId').focus();
+                return;
+            }
+
+            // استخراج ID از URL یا استفاده مستقیم از مقدار وارد شده
+            const userId = extractId(rawUserId);
+            
+            if (!userId) {
+                showResponse('❌ شناسه کاربر معتبر نیست. لطفاً UUID یا URL کامل را وارد کنید.', 'response-error');
+                document.getElementById('userId').focus();
+                return;
+            }
+
+            const button = event.target;
+            setButtonLoading(button, true);
+            showResponse('⏳ در حال ارسال درخواست...', 'response-loading');
+
+            const requestBody = {
+                userId: userId,
+                action: action
+            };
+            
+            if (reason) {
+                requestBody.reason = reason;
+            }
+
+            const requestData = {
+                url: `${API_BASE_URL}/user`,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Admin-Token': ADMIN_TOKEN
+                },
+                body: requestBody
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/user`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Admin-Token': ADMIN_TOKEN
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                let data;
+                const contentType = response.headers.get('content-type');
+                
+                // بررسی اینکه آیا پاسخ JSON است یا HTML (خطای 404/500)
+                if (contentType && contentType.includes('application/json')) {
+                    data = await response.json();
+                } else {
+                    const textResponse = await response.text();
+                    // اگر HTML برگردانده شده (مثل صفحه 404)
+                    if (textResponse.trim().startsWith('<!DOCTYPE') || textResponse.trim().startsWith('<html')) {
+                        throw new Error(`سرور HTML برگردانده است (احتمالاً URL اشتباه است). کد وضعیت: ${response.status}`);
+                    }
+                    // تلاش برای parse کردن به عنوان JSON
+                    try {
+                        data = JSON.parse(textResponse);
+                    } catch {
+                        data = { message: textResponse || 'بدون پاسخ' };
+                    }
+                }
+                
+                if (response.ok) {
+                    const actionText = action === 'block' ? 'بلاک شد' : 'آنبلاک شد';
+                    showResponse(
+                        `✅ موفقیت‌آمیز! کاربر ${actionText}.\n\n` +
+                        `User ID: ${userId}${reason ? '\nدلیل: ' + reason : ''}\n\n` +
+                        `جزئیات: ${JSON.stringify(data, null, 2)}`,
+                        'response-success'
+                    );
+
+                    // بروزرسانی لیست بلاک شده‌ها
+                    if (action === 'block') {
+                        addBlockedUser(userId, null, reason);
+                    } else {
+                        // unblock - حذف از لیست
+                        removeBlockedUser(userId);
+                    }
+
+                    // ثبت لاگ موفقیت
+                    saveLog({
+                        type: 'user',
+                        userId: userId,
+                        action: action,
+                        reason: reason || null,
+                        request: requestData,
+                        response: data,
+                        success: true,
+                        statusCode: response.status,
+                        timestamp: formatTimestamp()
+                    });
+                } else {
+                    let errorMessage = data.message || data.error || 'خطای نامشخص';
+                    
+                    if (response.status === 401) {
+                        errorMessage = '❌ خطای احراز هویت: توکن ادمین نامعتبر است یا ارسال نشده است.';
+                    } else if (response.status === 500) {
+                        errorMessage = '❌ خطای سرور: توکن ادمین پیکربندی نشده است یا خطای داخلی سرور رخ داده است.';
+                    }
+                    
+                    showResponse(
+                        `${errorMessage}\n\nکد وضعیت: ${response.status}`,
+                        'response-error'
+                    );
+
+                    // ثبت لاگ خطا
+                    saveLog({
+                        type: 'user',
+                        userId: userId,
+                        action: action,
+                        reason: reason || null,
+                        request: requestData,
+                        response: data,
+                        success: false,
+                        statusCode: response.status,
+                        error: errorMessage,
+                        timestamp: formatTimestamp()
+                    });
+                }
+            } catch (error) {
+                let errorMsg = error.message;
+                
+                // اگر خطای JSON parsing است
+                if (error.message.includes('JSON') || error.message.includes('<!DOCTYPE')) {
+                    errorMsg = '❌ سرور پاسخ JSON معتبری برنگردانده است.\n\n' +
+                               'احتمالاً:\n' +
+                               '• URL API اشتباه است\n' +
+                               '• سرور در دسترس نیست\n' +
+                               '• CORS تنظیم نشده است\n\n' +
+                               `URL درخواست: ${API_BASE_URL}/user\n` +
+                               `خطا: ${error.message}`;
+                }
+                
+                showResponse(
+                    `❌ خطا در ارتباط با سرور:\n${errorMsg}`,
+                    'response-error'
+                );
+
+                // ثبت لاگ خطای شبکه
+                saveLog({
+                    type: 'user',
+                    userId: userId,
+                    action: action,
+                    reason: reason || null,
+                    request: requestData,
+                    success: false,
+                    error: errorMsg,
+                    timestamp: formatTimestamp()
+                });
+            } finally {
+                setButtonLoading(button, false);
+            }
+        }
+
+        async function handlePostAction(action) {
+            const rawValue = document.getElementById('postId').value.trim();
+            const reason = document.getElementById('postReason').value.trim();
+            
+            if (!rawValue) {
+                showResponse('❌ لطفاً شناسه پست را وارد کنید.', 'response-error');
+                document.getElementById('postId').focus();
+                return;
+            }
+
+            // استخراج ID از URL یا استفاده مستقیم از مقدار وارد شده
+            const postId = extractId(rawValue);
+            
+            if (!postId) {
+                showResponse('❌ شناسه پست معتبر نیست. لطفاً UUID یا URL کامل را وارد کنید.', 'response-error');
+                document.getElementById('postId').focus();
+                return;
+            }
+
+            const button = event.target;
+            setButtonLoading(button, true);
+            showResponse('⏳ در حال ارسال درخواست...', 'response-loading');
+
+            const requestBody = {
+                postId: postId,
+                action: action
+            };
+            
+            if (reason) {
+                requestBody.reason = reason;
+            }
+
+            const requestData = {
+                url: `${API_BASE_URL}/post`,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Admin-Token': ADMIN_TOKEN
+                },
+                body: requestBody
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/post`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Admin-Token': ADMIN_TOKEN
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                let data;
+                const contentType = response.headers.get('content-type');
+                
+                // بررسی اینکه آیا پاسخ JSON است یا HTML (خطای 404/500)
+                if (contentType && contentType.includes('application/json')) {
+                    data = await response.json();
+                } else {
+                    const textResponse = await response.text();
+                    // اگر HTML برگردانده شده (مثل صفحه 404)
+                    if (textResponse.trim().startsWith('<!DOCTYPE') || textResponse.trim().startsWith('<html')) {
+                        throw new Error(`سرور HTML برگردانده است (احتمالاً URL اشتباه است). کد وضعیت: ${response.status}`);
+                    }
+                    // تلاش برای parse کردن به عنوان JSON
+                    try {
+                        data = JSON.parse(textResponse);
+                    } catch {
+                        data = { message: textResponse || 'بدون پاسخ' };
+                    }
+                }
+                
+                if (response.ok) {
+                    const actionText = action === 'block' ? 'بلاک شد' : 'آنبلاک شد';
+                    showResponse(
+                        `✅ موفقیت‌آمیز! پست ${actionText}.\n\n` +
+                        `Post ID: ${postId}${reason ? '\nدلیل: ' + reason : ''}\n\n` +
+                        `جزئیات: ${JSON.stringify(data, null, 2)}`,
+                        'response-success'
+                    );
+
+                    // بروزرسانی لیست بلاک شده‌ها
+                    if (action === 'block') {
+                        addBlockedPost(postId, reason);
+                    } else {
+                        removeBlockedPost(postId);
+                    }
+
+                    // ثبت لاگ موفقیت
+                    saveLog({
+                        type: 'post',
+                        postId: postId,
+                        action: action,
+                        reason: reason || null,
+                        request: requestData,
+                        response: data,
+                        success: true,
+                        statusCode: response.status,
+                        timestamp: formatTimestamp()
+                    });
+                } else {
+                    let errorMessage = data.message || data.error || 'خطای نامشخص';
+                    
+                    if (response.status === 401) {
+                        errorMessage = '❌ خطای احراز هویت: توکن ادمین نامعتبر است یا ارسال نشده است.';
+                    } else if (response.status === 500) {
+                        errorMessage = '❌ خطای سرور: توکن ادمین پیکربندی نشده است یا خطای داخلی سرور رخ داده است.';
+                    }
+                    
+                    showResponse(
+                        `${errorMessage}\n\nکد وضعیت: ${response.status}`,
+                        'response-error'
+                    );
+
+                    // ثبت لاگ خطا
+                    saveLog({
+                        type: 'post',
+                        postId: postId,
+                        action: action,
+                        reason: reason || null,
+                        request: requestData,
+                        response: data,
+                        success: false,
+                        statusCode: response.status,
+                        error: errorMessage,
+                        timestamp: formatTimestamp()
+                    });
+                }
+            } catch (error) {
+                let errorMsg = error.message;
+                
+                // اگر خطای JSON parsing است
+                if (error.message.includes('JSON') || error.message.includes('<!DOCTYPE')) {
+                    errorMsg = '❌ سرور پاسخ JSON معتبری برنگردانده است.\n\n' +
+                               'احتمالاً:\n' +
+                               '• URL API اشتباه است\n' +
+                               '• سرور در دسترس نیست\n' +
+                               '• CORS تنظیم نشده است\n\n' +
+                               `URL درخواست: ${API_BASE_URL}/post\n` +
+                               `خطا: ${error.message}`;
+                }
+                
+                showResponse(
+                    `❌ خطا در ارتباط با سرور:\n${errorMsg}`,
+                    'response-error'
+                );
+
+                // ثبت لاگ خطای شبکه
+                saveLog({
+                    type: 'post',
+                    postId: postId,
+                    action: action,
+                    reason: reason || null,
+                    request: requestData,
+                    success: false,
+                    error: errorMsg,
+                    timestamp: formatTimestamp()
+                });
+            } finally {
+                setButtonLoading(button, false);
+            }
+        }
+
+        // Allow Enter key to submit (only in ID fields, not in textarea)
+        document.getElementById('userId').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleUserAction('block');
+            }
+        });
+
+        document.getElementById('postId').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handlePostAction('block');
+            }
+        });
+    </script>
+</body>
+</html>
