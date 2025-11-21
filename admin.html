@@ -641,8 +641,44 @@
         .blocked-item-info {
             flex: 1;
             display: flex;
+            flex-direction: row;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
+        .blocked-item-content {
+            flex: 1;
+            display: flex;
             flex-direction: column;
             gap: 8px;
+        }
+
+        .blocked-item-thumbnail {
+            width: 60px;
+            height: 60px;
+            min-width: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid #e0e0e0;
+            flex-shrink: 0;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #ccc;
+        }
+
+        .blocked-item-preview {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+            margin-top: 5px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .blocked-item-id {
@@ -712,18 +748,75 @@
             border: none;
             color: #6c757d;
             padding: 5px;
-            font-size: 20px;
-            line-height: 1;
+            font-size: 18px;
             cursor: pointer;
             transition: all 0.2s ease;
-            border-radius: 50%;
-            width: 32px;
-            height: 32px;
         }
 
         .btn-copy:hover {
-            background: #f0f0f0;
             color: #333;
+            transform: scale(1.1);
+        }
+        
+        /* Post Preview Section */
+        .post-preview-container {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .post-preview-container.show {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+        
+        .preview-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: #eee;
+            flex-shrink: 0;
+        }
+        
+        .preview-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .preview-title {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .preview-desc {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .preview-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 80px;
+            color: #666;
+            font-size: 13px;
+            gap: 10px;
         }
 
         .blocked-empty {
@@ -749,50 +842,6 @@
         .badge-info {
             background: #d1ecf1;
             color: #0c5460;
-        }
-
-        /* Styles for Post Thumbnail and Preview */
-        .blocked-item-info {
-            flex: 1;
-            display: flex;
-            flex-direction: row;
-            gap: 15px;
-            align-items: flex-start;
-        }
-
-        .blocked-item-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .blocked-item-thumbnail {
-            width: 60px;
-            height: 60px;
-            min-width: 60px;
-            border-radius: 8px;
-            object-fit: cover;
-            border: 1px solid #e0e0e0;
-            flex-shrink: 0;
-            background: #f0f0f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: #ccc;
-        }
-
-        .blocked-item-preview {
-            font-size: 13px;
-            color: #666;
-            line-height: 1.5;
-            margin-top: 5px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
     </style>
 
@@ -879,8 +928,13 @@
         </div>
 
         <div class="form-group">
-            <label for="postId">شناسه پست (Post ID) <span style="color: red;">*</span>:</label>
-            <input type="text" id="postId" required />
+            <label for="postId">لینک پست (Post Link) <span style="color: red;">*</span>:</label>
+            <input type="text" id="postId" placeholder="https://mahdaviat.metafa.ir/post/..." required oninput="handlePostLinkInput(this.value)" />
+            
+            <!-- Post Preview -->
+            <div id="postPreview" class="post-preview-container">
+                <!-- Content will be injected here -->
+            </div>
         </div>
         <div class="form-group">
             <label for="postReason">
@@ -1198,7 +1252,7 @@
                         reason: reason || null,
                         blockedAt: new Date().toISOString(),
                         thumbnail: details.thumbnail || null,
-                        previewText: details.previewText || null,
+                        previewText: details.previewText || null
                     });
                 }
                 
@@ -1451,6 +1505,94 @@
                 }
             } catch (error) {
                 showResponse(`❌ خطا در ارتباط با سرور:\n${error.message}`, 'response-error');
+            }
+        }
+
+        // Global variable to store fetched preview details
+        let currentPreviewDetails = null;
+
+        // تاخیر برای جلوگیری از ارسال درخواست‌های زیاد هنگام تایپ
+        let typingTimer;
+        const doneTypingInterval = 500; // 0.5 ثانیه
+
+        function handlePostLinkInput(value) {
+            clearTimeout(typingTimer);
+            const previewContainer = document.getElementById('postPreview');
+            
+            if (!value) {
+                previewContainer.classList.remove('show');
+                previewContainer.innerHTML = '';
+                currentPreviewDetails = null;
+                return;
+            }
+
+            // اگر لینک معتبر است، پیش‌نمایش را بارگذاری کن
+            if (value.startsWith('http')) {
+                previewContainer.innerHTML = `
+                    <div class="preview-loading">
+                        <span class="loading-spinner" style="border-color: #666; border-top-color: transparent;"></span>
+                        در حال دریافت اطلاعات پست...
+                    </div>
+                `;
+                previewContainer.classList.add('show');
+
+                typingTimer = setTimeout(() => {
+                    fetchLinkPreview(value);
+                }, doneTypingInterval);
+            } else {
+                previewContainer.classList.remove('show');
+            }
+        }
+
+        async function fetchLinkPreview(url) {
+            const previewContainer = document.getElementById('postPreview');
+            try {
+                // درخواست به Worker برای دریافت اطلاعات متا
+                const response = await fetch(`${API_BASE_URL}/preview?url=${encodeURIComponent(url)}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    renderLinkPreview(data);
+                } else {
+                    previewContainer.innerHTML = '<div style="color: #dc3545; font-size: 13px;">❌ خطا در دریافت پیش‌نمایش</div>';
+                }
+            } catch (error) {
+                console.error('Error fetching preview:', error);
+                previewContainer.innerHTML = '<div style="color: #dc3545; font-size: 13px;">❌ خطا در ارتباط با سرور</div>';
+            }
+        }
+
+        function renderLinkPreview(data) {
+            const previewContainer = document.getElementById('postPreview');
+            
+            // ذخیره اطلاعات برای استفاده هنگام بلاک کردن
+            currentPreviewDetails = {
+                thumbnail: data.image,
+                previewText: data.title || data.description
+            };
+
+            const imageHtml = data.image ? 
+                `<img src="${data.image}" class="preview-image" onerror="this.style.display='none'">` : 
+                '<div class="preview-image" style="display: flex; align-items: center; justify-content: center; font-size: 24px;">📝</div>';
+
+            const titleHtml = data.title ? `<div class="preview-title">${data.title}</div>` : '';
+            const descHtml = data.description ? `<div class="preview-desc">${data.description}</div>` : '';
+
+            if (!data.title && !data.description) {
+                 previewContainer.innerHTML = `
+                    ${imageHtml}
+                    <div class="preview-content">
+                        <div class="preview-desc" style="font-style: italic;">اطلاعات متنی یافت نشد</div>
+                    </div>
+                `;
+            } else {
+                previewContainer.innerHTML = `
+                    ${imageHtml}
+                    <div class="preview-content">
+                        ${titleHtml}
+                        ${descHtml}
+                    </div>
+                `;
             }
         }
 
@@ -1770,8 +1912,14 @@
 
                     // بروزرسانی لیست بلاک شده‌ها
                     if (action === 'block') {
-                        // Fetch post details to store thumbnail and preview
-                        fetchPostDetailsAndSave(postId, reason);
+                        // استفاده از اطلاعات پیش‌نمایش ذخیره شده
+                        const details = currentPreviewDetails || {};
+                        addBlockedPost(postId, reason, details);
+                        
+                        // پاک کردن فیلد و پیش‌نمایش
+                        document.getElementById('postId').value = '';
+                        document.getElementById('postPreview').classList.remove('show');
+                        currentPreviewDetails = null;
                     } else {
                         removeBlockedPost(postId);
                     }
@@ -1848,25 +1996,6 @@
                 });
             } finally {
                 setButtonLoading(button, false);
-            }
-        }
-
-        // New helper function to fetch post details and save to localStorage
-        async function fetchPostDetailsAndSave(postId, reason) {
-            const postUrl = `https://mahdaviat.metafa.ir/post/${postId}`;
-            try {
-                const response = await fetch(`${API_BASE_URL}/details?url=${encodeURIComponent(postUrl)}`);
-                if (response.ok) {
-                    const details = await response.json();
-                    addBlockedPost(postId, reason, details);
-                } else {
-                    // Save without details if fetch fails
-                    addBlockedPost(postId, reason);
-                }
-            } catch (error) {
-                console.error('Error fetching post details:', error);
-                // Save without details if fetch fails
-                addBlockedPost(postId, reason);
             }
         }
 
