@@ -21,14 +21,19 @@ export default {
           status: 204,
           headers: {
             "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
             "Access-Control-Allow-Headers": "Content-Type, X-Admin-Token",
             "Access-Control-Max-Age": "86400",
           },
         });
       }
 
-      // --- امنیت: بررسی توکن از کلاینت ---
+      // --- New Route for Post Details ---
+      if (pathname === "/details" && request.method === "GET") {
+        return await getPostDetails(request, env);
+      }
+
+      // --- Security: Check client token ---
       const clientToken = request.headers.get("X-Admin-Token");
       if (!clientToken) {
         return new Response(
@@ -131,7 +136,65 @@ export default {
 };
 
 /**
- * تابع پراکسی حرفه‌ای برای ارسال درخواست به Backend
+ * New function to get post details by scraping the post page.
+ * @param {Request} request The incoming request, expecting a `url` query parameter.
+ * @param {Object} env The environment variables.
+ * @returns {Response} A JSON response with thumbnail and previewText.
+ */
+async function getPostDetails(request, env) {
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": "*",
+    "Content-Type": "application/json",
+  };
+
+  const url = new URL(request.url);
+  const postUrl = url.searchParams.get('url');
+
+  if (!postUrl) {
+    return new Response(JSON.stringify({ error: "url parameter is missing" }), {
+      status: 400,
+      headers: corsHeaders
+    });
+  }
+
+  try {
+    const response = await fetch(postUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
+    });
+
+    if (!response.ok) {
+      return new Response(JSON.stringify({ error: `Failed to fetch post details. Status: ${response.status}` }), {
+        status: 502,
+        headers: corsHeaders
+      });
+    }
+    const html = await response.text();
+
+    const thumbnailMatch = html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/);
+    const descriptionMatch = html.match(/<meta\s+property="og:description"\s+content="([^"]+)"/);
+
+    const details = {
+      thumbnail: thumbnailMatch ? thumbnailMatch[1] : null,
+      previewText: descriptionMatch ? descriptionMatch[1] : null,
+    };
+
+    return new Response(JSON.stringify(details), {
+      status: 200,
+      headers: corsHeaders
+    });
+
+  } catch (error) {
+    return new Response(JSON.stringify({ error: 'Failed to scrape post page', details: error.message }), {
+      status: 500,
+      headers: corsHeaders
+    });
+  }
+}
+
+/**
+ * Professional proxy function to send requests to the Backend
  * 
  * @param {string} endpoint - مسیر API (مثلاً /api/admin/block/post)
  * @param {Request} request - درخواست اصلی
