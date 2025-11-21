@@ -83,11 +83,14 @@ export default {
       }
 
       // --- مسیردهی ---
-      if (pathname === "/post") {
+      // پشتیبانی از /post و /post/ و /user و /user/
+      const normalizedPath = pathname.replace(/\/$/, "");
+      
+      if (normalizedPath === "/post") {
         return await proxyToBackend("/api/admin/block/post", request, env);
       }
 
-      if (pathname === "/user") {
+      if (normalizedPath === "/user") {
         return await proxyToBackend("/api/admin/block/user", request, env);
       }
 
@@ -137,24 +140,62 @@ export default {
  */
 async function proxyToBackend(endpoint, request, env) {
   const backendUrl = "https://mahdaviat.metafa.ir" + endpoint;
-  const body = await request.text();
+  
+  let body;
+  try {
+    body = await request.text();
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Request body error",
+        message: "خطا در خواندن body درخواست",
+        details: error.message
+      }),
+      {
+        status: 400,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        }
+      }
+    );
+  }
 
   console.log(`[Worker] Forwarding ${request.method} ${endpoint}`);
 
   try {
+    // Timeout: 30 ثانیه
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
     const res = await fetch(backendUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "X-Admin-Token": env.ADMIN_TOKEN,
       },
-      body,
+      body: body || undefined,
+      signal: controller.signal,
     });
 
-    const result = await res.text();
+    clearTimeout(timeoutId);
+
+    let result;
+    try {
+      result = await res.text();
+    } catch (error) {
+      result = JSON.stringify({
+        success: false,
+        error: "Response parsing error",
+        message: "خطا در خواندن پاسخ از سرور",
+        status: res.status
+      });
+    }
 
     return new Response(result, {
       status: res.status,
+      statusText: res.statusText,
       headers: {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
@@ -165,18 +206,33 @@ async function proxyToBackend(endpoint, request, env) {
   } catch (error) {
     console.error(`[Worker] Error forwarding to backend:`, error);
     
+    // بررسی نوع خطا
+    let errorMessage = "خطا در ارتباط با سرور متافا";
+    let statusCode = 500;
+    
+    if (error.name === "AbortError") {
+      errorMessage = "Timeout: سرور متافا پاسخ نداد (بیش از 30 ثانیه)";
+      statusCode = 504;
+    } else if (error.message.includes("fetch")) {
+      errorMessage = "خطا در اتصال به سرور متافا";
+      statusCode = 502;
+    }
+    
     return new Response(
       JSON.stringify({
         success: false,
         error: "Backend communication error",
-        message: "خطا در ارتباط با سرور متافا",
-        details: error.message
+        message: errorMessage,
+        details: error.message,
+        endpoint: endpoint
       }),
       {
-        status: 500,
+        status: statusCode,
         headers: {
           "Content-Type": "application/json",
           "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "POST, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type, X-Admin-Token",
         }
       }
     );
